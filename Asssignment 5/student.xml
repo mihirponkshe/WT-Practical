@@ -1,0 +1,27 @@
+<!DOCTYPE students SYSTEM "students.dtd">
+<students>
+    <student>
+        <id>101</id>
+        <name>John Doe</name>
+        <age>21</age>
+        <course>Computer Science</course>
+    </student>
+    <student>
+        <id>102</id>
+        <name>Jane Smith</name>
+        <age>22</age>
+        <course>Electronics</course>
+    </student>
+    <student>
+        <id>103</id>
+        <name>Michael Brown</name>
+        <age>20</age>
+        <course>Mechanical Engineering</course>
+    </student>
+    <student>
+        <id>104</id>
+        <name>Emily Davis</name>
+        <age>23</age>
+        <course>Information Technology</course>
+    </student>
+</students>
