@@ -1,0 +1,127 @@
+<?php
+// --- Database Connection ---
+$servername = "localhost";
+$username   = "root";
+$password   = "";
+$database   = "my_friends_db";  // Ensure this database exists
+
+$conn = new mysqli($servername, $username, $password, $database);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// --- Determine Action ---
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+if ($action == 'delete' && isset($_GET['id'])) {
+    // Delete Friend
+    $id = intval($_GET['id']);
+    $conn->query("DELETE FROM friends WHERE id = $id");
+    header("Location: friends.php");
+    exit;
+}
+
+if ($action == 'add' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Add New Friend
+    $name    = $conn->real_escape_string($_POST['name']);
+    $pointer = floatval($_POST['pointer']);
+    $marks   = intval($_POST['marks']);
+    $conn->query("INSERT INTO friends (name, pointer, marks) VALUES ('$name', '$pointer', '$marks')");
+    header("Location: friends.php");
+    exit;
+}
+
+if ($action == 'edit' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // Update Friend
+        $name    = $conn->real_escape_string($_POST['name']);
+        $pointer = floatval($_POST['pointer']);
+        $marks   = intval($_POST['marks']);
+        $conn->query("UPDATE friends SET name='$name', pointer='$pointer', marks='$marks' WHERE id=$id");
+        header("Location: friends.php");
+        exit;
+    }
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Friends App</title>
+</head>
+<body>
+    <?php
+    // --- Add New Friend Form ---
+    if ($action == 'add') {
+    ?>
+        <h2>Add New Friend</h2>
+        <form method="post">
+            <label>Name:</label>
+            <input type="text" name="name" placeholder="Enter friend's name" required><br><br>
+            <label>Pointer:</label>
+            <input type="number" step="0.01" name="pointer" placeholder="e.g., 9.1" required><br><br>
+            <label>Marks:</label>
+            <input type="number" name="marks" placeholder="Enter marks" required><br><br>
+            <button type="submit">Add Friend</button>
+        </form>
+        <br>
+        <a href="friends.php">Back to Friends List</a>
+
+    <?php
+    // --- Edit Friend Form ---
+    } else if ($action == 'edit' && isset($_GET['id'])) {
+        $id = intval($_GET['id']);
+        $result = $conn->query("SELECT * FROM friends WHERE id = $id");
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+    ?>
+            <h2>Edit Friend</h2>
+            <form method="post">
+                <label>Name:</label>
+                <input type="text" name="name" value="<?php echo $row['name']; ?>" required><br><br>
+                <label>Pointer:</label>
+                <input type="number" step="0.01" name="pointer" value="<?php echo $row['pointer']; ?>" required><br><br>
+                <label>Marks:</label>
+                <input type="number" name="marks" value="<?php echo $row['marks']; ?>" required><br><br>
+                <button type="submit">Update Friend</button>
+            </form>
+            <br>
+            <a href="friends.php">Back to Friends List</a>
+    <?php
+        } else {
+            echo "<p>Friend not found!</p>";
+        }
+    // --- Display Friends List ---
+    } else {
+        $result = $conn->query("SELECT * FROM friends");
+    ?>
+        <h2>Friends List</h2>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Pointer</th>
+                <th>Marks</th>
+                <th>Actions</th>
+            </tr>
+            <?php while($row = $result->fetch_assoc()) { ?>
+            <tr>
+                <td><?php echo $row['id']; ?></td>
+                <td><?php echo $row['name']; ?></td>
+                <td><?php echo $row['pointer']; ?></td>
+                <td><?php echo $row['marks']; ?></td>
+                <td>
+                    <a href="friends.php?action=edit&id=<?php echo $row['id']; ?>">Edit</a> |
+                    <a href="friends.php?action=delete&id=<?php echo $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this friend?');">Delete</a>
+                </td>
+            </tr>
+            <?php } ?>
+        </table>
+        <br>
+        <a href="friends.php?action=add">Add New Friend</a>
+    <?php } ?>
+</body>
+</html>
+<?php
+$conn->close();
+?>
